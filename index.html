@@ -30,7 +30,7 @@
   run these steps:
 </p>
 
-<ul>
+<ol>
   <li>
     Let <i>input</i> be the URL’s
     <a href="http://url.spec.whatwg.org/#concept-url-scheme-data">
@@ -63,7 +63,7 @@
     (<b>Issue:</b> Match how strictly? Case sensitive or not?
     Allow whitespace? Percent-encoding?)
     then:
-    <ul>
+    <ol>
       <li>
         Remove the matched substring from <i>header</i>
       </li>
@@ -78,7 +78,7 @@
         Ignore which non-alphabet bytes?
         Missing/too little/too much padding?)
       </li>
-    </ul>
+    </ol>
   </li>
   <li>
     Return a response with <i>header</i> as a <i>Content-Type</i> header
@@ -87,7 +87,7 @@
     as for an HTTP <i>Content-Type</i> header.
     (<b>Issue:</b> what can we reference to define that?)
   </li>
-</ul>
+</ol>
 
 <p>
   <b>TODO:</b> The algorithm is missing this part of RFC2397:
