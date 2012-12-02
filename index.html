@@ -1,4 +1,115 @@
 <!doctype html>
-<meta charset=utf8>
-<title>Hello, GitHub Pages!</title>
-<h1>Hello, GitHub Pages!</h1>
+<html lang=en>
+<meta charset=utf-8>
+<title>The "data" URL scheme</title>
+
+<h1>The <code>data</code> URL scheme</h1>
+
+<p>
+  The <code>data</code> URL scheme is defined by
+  <a href="http://tools.ietf.org/html/rfc2397">RFC 2397</a>,
+  which unfortunately is vague regarding many details of the syntax.
+  This document describes a more precise parsing algorithm for
+  <code>data:</code> URLs.
+</p>
+
+<p>
+  See also
+  <a href="https://www.w3.org/Bugs/Public/show_bug.cgi?id=19494">Bug 19494</a>
+  on the W3C Bugzilla
+  and other stuff linked from there.
+</p>
+
+
+<h2>“Fetching” a <code>data:</code> URL</h2>
+
+<p>
+  To <b>obtain a resource</b> from a
+  <a href="http://url.spec.whatwg.org/#concept-parsed-url">parsed URL</a>
+  whose <i>scheme</i> is a ASCII case-insensitive match for "data:",
+  run these steps:
+</p>
+
+<ul>
+  <li>
+    Let <i>input</i> be the URL’s
+    <a href="http://url.spec.whatwg.org/#concept-url-scheme-data">
+    scheme data</a>.
+  </li>
+  <li>
+    If the URL’s
+    <a href="http://url.spec.whatwg.org/#concept-url-query">query</a>
+    is not null, append "<code>?</code>" and the query to <i>input</i>.
+  </li>
+  <li>
+    If <i>input</i> does not contain a U+002C COMMA code point,
+    return a network error and abort these steps.
+    (Note: the comma can come either from the scheme data or the query.)
+  </li>
+  <li>
+    Split <i>input</i> at the first comma.
+    Let <i>header</i> and <i>body</i> be the parts before and after the comma,
+    respectively.
+    (<b>Issue:</b> what if the comma is an a MIME quoted string for
+    a parameter value?
+    Example: <code>data:text/plain;foo="bar,baz";charset=utf8,body</code>)
+  </li>
+  <li>
+    Let <i>body-bytes</i> be the result of running
+    <i>percent decode to bytes</i> on <i>body</i>.
+  </li>
+  <li>
+    If <i>header</i> ends with "<code>;base64</code>"
+    (<b>Issue:</b> Match how strictly? Case sensitive or not?
+    Allow whitespace? Percent-encoding?)
+    then:
+    <ul>
+      <li>
+        Remove the matched substring from <i>header</i>
+      </li>
+      <li>
+        Decode <i>body-bytes</i> with the
+        <a href="https://tools.ietf.org/html/rfc4648#section-4">Base 64
+        Encoding</a>.
+        (<b>Issues:</b> Return an error on "invalid" base64?
+        What is invalid?
+        Also accept the <i>URL and Filename Safe Alphabet</i>?
+        Mixed alphabets in the same body?
+        Ignore which non-alphabet bytes?
+        Missing/too little/too much padding?)
+      </li>
+    </ul>
+  </li>
+  <li>
+    Return a response with <i>header</i> as a <i>Content-Type</i> header
+    and <i>body-bytes</i> as the body.
+    The parsing and interpretation of <i>header</i> must be the same
+    as for an HTTP <i>Content-Type</i> header.
+    (<b>Issue:</b> what can we reference to define that?)
+  </li>
+</ul>
+
+<p>
+  <b>TODO:</b> The algorithm is missing this part of RFC2397:
+</p>
+
+<blockquote>
+  If &lt;mediatype&gt; is omitted, it defaults to text/plain;charset=US-ASCII.
+  As a shorthand, "text/plain" can be omitted
+  but the charset parameter supplied.
+</blockquote>
+
+<p>
+  <b>Note:</b> this definition does not impose any length limit on data: URLs.
+  When doing <a href="http://url.spec.whatwg.org/#concept-url-parser">
+  URL&nbsp;parsing</a> followed by this algorithm,
+  implementation are allowed to skip some intermediate steps
+  in order to process large URLs efficiently,
+  as long as the "black box" behavior the same.
+</p>
+
+<p>
+  To <b>percent decode to bytes</b>, run the same algorithm as
+  <b><a href="http://url.spec.whatwg.org/#percent-decode">percent decode</a></b>
+  but replacing the last step with "Return <i>bytes</i>."
+</p>
