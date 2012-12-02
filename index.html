@@ -1,40 +1,38 @@
-<!doctype html>
-<html lang=en>
-<meta charset=utf-8>
+<!DOCTYPE html><html lang="en"><meta charset="utf-8">
 <title>The "data" URL scheme</title>
-<link rel=stylesheet href=http://www.whatwg.org/style/specification>
+<link href="http://www.whatwg.org/style/specification" rel="stylesheet">
 
-<div class=head>
+<div class="head">
   <h1>The <code>data</code> URL scheme</h1>
 
   <dl>
    <dt>Latest version:
-   <dd><a href=http://simonsapin.github.com/data-urls/>http://simonsapin.github.com/data-urls/</a>
+   <dd><a href="http://simonsapin.github.com/data-urls/">http://simonsapin.github.com/data-urls/</a>
 
    <dt>This version:
-   <dd>Last updated on [DATE].
+   <dd>Last updated on 2 December 2012.
 
    <dt>Participate:</dt>
    <dd><a href="https://github.com/SimonSapin/data-urls/issues">File a bug</a>
    <dd><a href="http://wiki.whatwg.org/wiki/IRC">IRC: #whatwg on Freenode</a>
 
    <dt>Version History:
-   <dd><a href=https://github.com/SimonSapin/data-urls/commits>https://github.com/SimonSapin/data-urls/commits</a>
+   <dd><a href="https://github.com/SimonSapin/data-urls/commits">https://github.com/SimonSapin/data-urls/commits</a>
 
    <dt>Editor:
    <dd><a href="http://exyr.org/">Simon Sapin</a>
   </dl>
 
-  <p class=copyright>
-    <a rel="license" href="http://creativecommons.org/publicdomain/zero/1.0/">
-    <img src="http://i.creativecommons.org/p/zero/1.0/80x15.png" alt="CC0"></a>
+  <p class="copyright">
+    <a href="http://creativecommons.org/publicdomain/zero/1.0/" rel="license">
+    <img alt="CC0" src="http://i.creativecommons.org/p/zero/1.0/80x15.png"></a>
     To the extent possible under law, the editors have waived all copyright and
     related or neighboring rights to this work.
 
 </div>
 
 
-<h2>Introduction</h2>
+<h2 id="introduction"><span class="secno">1 </span>Introduction</h2>
 
 <p>
   The <code>data</code> URL scheme is defined by
@@ -50,7 +48,7 @@
   and other stuff linked from there.
 
 
-<h2>“Fetching” a <code>data:</code> URL</h2>
+<h2 id="“fetching”-a-data:-url"><span class="secno">2 </span>“Fetching” a <code>data:</code> URL</h2>
 
 <p>
   To <b>obtain a resource</b> from a
@@ -70,21 +68,21 @@
   <li>
     If <i>input</i> does not contain a U+002C COMMA code point,
     return a network error and abort these steps.
-    <p class=note>
+    <p class="note">
       The comma can come either from the scheme data or the query.
   <li>
     Split <i>input</i> at the first comma.
     Let <i>header</i> and <i>body</i> be the parts before and after the comma,
     respectively.
-    <p class=XXX>
+    <p class="XXX">
       What if the comma is an a MIME quoted string for a parameter value?
       Example: <code>data:text/plain;foo="bar,baz";charset=utf8,body</code>
   <li>
     Let <i>body-bytes</i> be the result of running
-    <i>percent decode to bytes</i> on <i>body</i>.
+    <a href="#percent-decode-to-bytes"><i>percent decode to bytes</i></a> on <i>body</i>.
   <li>
     If <i>header</i> ends with "<code>;base64</code>" then:
-    <p class=XXX>
+    <p class="XXX">
       Match how strictly? Case sensitive or not?
       Allow whitespace? Percent-encoding?
     <ol>
@@ -94,7 +92,7 @@
         Decode <i>body-bytes</i> with the
         <a href="https://tools.ietf.org/html/rfc4648#section-4">Base 64
         Encoding</a>.
-        <p class=XXX>
+        <p class="XXX">
           Return an error on "invalid" base64?
           What is invalid?
           Also accept the <i>URL and Filename Safe Alphabet</i>?
@@ -107,11 +105,11 @@
     and <i>body-bytes</i> as the body.
     The parsing and interpretation of <i>header</i> must be the same
     as for an HTTP <i>Content-Type</i> header.
-    <p class=XXX>
+    <p class="XXX">
       What can we reference to define that?
 </ol>
 
-<p class=XXX>
+<p class="XXX">
   <b>TODO:</b> The algorithm is missing this part of RFC2397:
 
 <blockquote>
@@ -120,15 +118,15 @@
   but the charset parameter supplied.
 </blockquote>
 
-<p class=note>
+<p class="note">
   This definition does not impose any length limit on data: URLs.
   When doing <a href="http://url.spec.whatwg.org/#concept-url-parser">
-  URL&nbsp;parsing</a> followed by this algorithm,
+  URL parsing</a> followed by this algorithm,
   implementation are allowed to skip some intermediate steps
   in order to process large URLs efficiently,
   as long as the "black box" behavior the same.
 
 <p>
-  To <dfn>percent decode to bytes</dfn>, run the same algorithm as
+  To <dfn id="percent-decode-to-bytes">percent decode to bytes</dfn>, run the same algorithm as
   <b><a href="http://url.spec.whatwg.org/#percent-decode">percent decode</a></b>
   but replacing the last step with "Return <i>bytes</i>."
