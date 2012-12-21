@@ -81,7 +81,8 @@
       Example: <code>data:text/plain;foo="bar,baz";charset=utf8,body</code>
   <li>
     Let <i>body-bytes</i> be the result of running
-    <i>percent decode to bytes</i> on <i>body</i>.
+    <a href="http://url.spec.whatwg.org/#percent-decode">percent decode</a>
+    on <i>body</i>.
   <li>
     If <i>header</i> ends with "<code>;base64</code>" then:
     <p class=XXX>
@@ -126,8 +127,3 @@
   implementation are allowed to skip some intermediate steps
   in order to process large URLs efficiently,
   as long as the "black box" behavior the same.
-
-<p>
-  To <dfn>percent decode to bytes</dfn>, run the same algorithm as
-  <b><a href="http://url.spec.whatwg.org/#percent-decode">percent decode</a></b>
-  but replacing the last step with "Return <i>bytes</i>."
