@@ -53,6 +53,12 @@
 <h2>“Fetching” a <code>data:</code> URL</h2>
 
 <p>
+  This algorithm returns either a failure or two byte strings:
+  a MIME type with parameters
+  (as it would appear in a <var>Content-Type</var> HTTP header)
+  and the decoded data.
+
+<p>
   To <b>obtain a resource</b> from a
   <a href="http://url.spec.whatwg.org/#concept-parsed-url">parsed URL</a>
   whose <i>scheme</i> is a ASCII case-insensitive match for "data:",
@@ -69,34 +75,34 @@
     is not null, append "<code>?</code>" and the query to <i>input</i>.
   <li>
     If <i>input</i> does not contain a U+002C COMMA code point,
-    return a network error and abort these steps.
+    return a failure and abort these steps.
     <p class=note>
       The comma can come either from the scheme data or the query.
   <li>
     Split <i>input</i> at the first comma.
-    Let <i>header</i> and <i>body</i> be the parts before and after the comma,
+    Let <i>mime_type</i> and <i>body</i> be the parts before and after the comma,
     respectively.
     <p class=XXX>
       What if the comma is an a MIME quoted string for a parameter value?
       Example: <code>data:text/plain;foo="bar,baz";charset=utf8,body</code>
   <li>
-    Let <i>body-bytes</i> be the result of running
+    Let <i>data</i> be the result of running
     <a href="http://url.spec.whatwg.org/#percent-decode">percent decode</a>
     on <i>body</i>.
   <li>
-    If <i>header</i> ends with "<code>;base64</code>" then:
+    If <i>mime_type</i> ends with "<code>;base64</code>" then:
     <p class=XXX>
       Match how strictly? Case sensitive or not?
       Allow whitespace? Percent-encoding?
     <ol>
       <li>
-        Remove the matched substring from <i>header</i>
+        Remove the matched substring from <i>mime_type</i>
       <li>
-        Decode <i>body-bytes</i> with the
+        Set <i>data</i> to the result of decoding <i>data</i> with the
         <a href="https://tools.ietf.org/html/rfc4648#section-4">Base 64
         Encoding</a>.
         <p class=XXX>
-          Return an error on "invalid" base64?
+          Return a failure on "invalid" base64?
           What is invalid?
           Also accept the <i>URL and Filename Safe Alphabet</i>?
           Mixed alphabets in the same body?
@@ -104,12 +110,7 @@
           Missing/too little/too much padding?
     </ol>
   <li>
-    Return a response with <i>header</i> as a <i>Content-Type</i> header
-    and <i>body-bytes</i> as the body.
-    The parsing and interpretation of <i>header</i> must be the same
-    as for an HTTP <i>Content-Type</i> header.
-    <p class=XXX>
-      What can we reference to define that?
+    Return <i>mime_type</i> and <i>data</i>.
 </ol>
 
 <p class=XXX>
@@ -122,6 +123,8 @@
 
 <p class=note>
   This definition does not impose any length limit on data: URLs.
+
+<p class=note>
   When doing <a href="http://url.spec.whatwg.org/#concept-url-parser">
   URL&nbsp;parsing</a> followed by this algorithm,
   implementation are allowed to skip some intermediate steps
