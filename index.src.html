@@ -1,11 +1,10 @@
 <!doctype html>
 <html lang=en>
 <meta charset=utf-8>
-<title>The "data" URL scheme</title>
-<link rel=stylesheet href=http://www.whatwg.org/style/specification>
+<title>Ambiguities in the "data" URL scheme</title>
+<link rel=stylesheet href=https://www.whatwg.org/style/specification>
 
-<div class=head>
-  <h1>The <code>data</code> URL scheme</h1>
+<h1>Ambiguities in the <code>data</code> URL scheme</h1>
 
 <p>Last updated on [DATE].
 
@@ -16,14 +15,12 @@
 </dl>
 
 
-<h2>Introduction</h2>
-
 <p>
   The <code>data</code> URL scheme is defined by
   <a href="http://tools.ietf.org/html/rfc2397">RFC 2397</a>,
   which unfortunately is vague regarding many details of the syntax.
-  This document describes a more precise parsing algorithm for
-  <code>data:</code> URLs.
+  This document lists some of the details that should be specified in a future,
+  more precise specification.
 
 <p>
   See also
@@ -31,84 +28,78 @@
   on the W3C Bugzilla
   and other stuff linked from there.
 
-
-<h2>“Fetching” a <code>data:</code> URL</h2>
-
-<p>
-  This algorithm returns either a failure or two byte strings:
-  a MIME type with parameters
-  (as it would appear in a <var>Content-Type</var> HTTP header)
-  and the decoded data.
-
-<p>
-  To <b>obtain a resource</b> from a
-  <a href="http://url.spec.whatwg.org/#concept-parsed-url">parsed URL</a>
-  with the "<code>data</code>" scheme,
-  run these steps:
-
-<ol>
+<ul>
   <li>
-    Let <i>input</i> be the URL’s
-    <a href="http://url.spec.whatwg.org/#concept-url-scheme-data">
-    scheme data</a>.
-  <li>
-    If the URL’s
-    <a href="http://url.spec.whatwg.org/#concept-url-query">query</a>
-    is not null, append "<code>?</code>" and the query to <i>input</i>.
-  <li>
-    If <i>input</i> does not contain a U+002C COMMA code point,
-    return a failure and abort these steps.
-    <p class=note>
-      The comma can come either from the scheme data or the query.
-  <li>
-    Split <i>input</i> at the first comma.
-    Let <i>mime_type</i> and <i>body</i> be the parts before and after the comma,
-    respectively.
-    <p class=XXX>
-      What if the comma is an a MIME quoted string for a parameter value?
-      Example: <code>data:text/plain;foo="bar,baz";charset=utf8,body</code>
-  <li>
-    Let <i>data</i> be the result of running
-    <a href="http://url.spec.whatwg.org/#percent-decode">percent decode</a>
-    on <i>body</i>.
-  <li>
-    If <i>mime_type</i> ends with "<code>;base64</code>" then:
-    <p class=XXX>
-      Match how strictly? Case sensitive or not?
-      Allow whitespace? Percent-encoding?
-    <ol>
-      <li>
-        Remove the matched substring from <i>mime_type</i>
-      <li>
-        Set <i>data</i> to the result of decoding <i>data</i> with the
-        <a href="https://tools.ietf.org/html/rfc4648#section-4">Base 64
-        Encoding</a>.
-        <p class=XXX>
-          Return a failure on "invalid" base64?
-          What is invalid?
-          Also accept the <i>URL and Filename Safe Alphabet</i>?
-          Mixed alphabets in the same body?
-          Ignore which non-alphabet bytes?
-          Missing/too little/too much padding?
-    </ol>
-  <li>
-    Return <i>mime_type</i> and <i>data</i>.
-</ol>
+    If the URL has a <a href="http://url.spec.whatwg.org/#concept-url-query">query</a>,
+    the <code>?</code> separator and the query string should be part of the input
+    to the <code>data</code> URL parsing algorithm.
 
-<p class=XXX>
-  <b>TODO:</b> The algorithm is missing this part of RFC2397:
+  <li>
+    However if the URL has a <a href="http://url.spec.whatwg.org/#concept-url-fragment">fragment</a>,
+    the <code>#</code> separator and the fragment identifier string should
+    <strong>not</strong> be part of the input.
+    Instead, the fragment identifier has the meaning and behavior
+    as it would e.g. with an <code>http</code> URL.
 
-  <q>If &lt;mediatype&gt; is omitted,
-    it defaults to text/plain;charset=US-ASCII.
-    As a shorthand, "text/plain" can be omitted
-    but the charset parameter supplied.</q>
+  <li>
+    Although it is often not necessary,
+    <a href="https://url.spec.whatwg.org/#percent-encoded-bytes">percent-encoding</a>
+    still applies to base64-encoded <code>data</code> URLs.
 
-<p class=note>
-  This definition does not impose any length limit on data: URLs.
+  <li>
+    The first U+002C comma of the input separates the MIME type from the data.
+    Does this still apply in that comma is inside a MIME quoted string for a parameter value?
+    Example: <code>data:text/plain;foo="bar,baz";charset=utf8,body</code>
 
-<p class=note>
-  When doing <a href="http://url.spec.whatwg.org/#concept-url-parser">
-  URL&nbsp;parsing</a> followed by this algorithm,
-  implementation are allowed to skip some intermediate steps
-  in order to process large URLs efficiently,
-  as long as the "black box" behavior the same.
+  <li>
+    What about a percent-encoded comma?
+    Example: <code>data:text/plain;foo=bar%2Cbaz;charset=utf8,body</code>
+
+  <li>
+    <p>How strictly should the parser look for <code>;base64</code>?
+    Examples:
+    <pre>
+data:text/plain;base64,Rm9vCg==
+data:text/plain; base64,Rm9vCg==
+data:text/plain;base64 ,Rm9vCg==
+data:text/plain;base 64,Rm9vCg==
+data:text/plain;Base64,Rm9vCg==
+data:text/plain;%62ase64,Rm9vCg==
+data:text/plain%3Bbase64,Rm9vCg==
+</pre>
+    <p>When RFC 2397 says:
+    <blockquote>
+      The ";base64" extension is distinguishable from a content-type
+      parameter by the fact that it doesn't have a following "=" sign.
+    </blockquote>
+    <p>Does this mean that other MIME parsing rules apply?
+
+  <li>
+    How should percent-encoding interact with MIME type parsing?
+    Examples:
+    <pre>
+data:text/plain;charset=utf8,%F0%9F%92%A9
+data:text/plain%3Bcharset=utf8,%F0%9F%92%A9
+data:text/plain;charset%3Dutf8,%F0%9F%92%A9
+data:text/plain;charset="utf8%22,%F0%9F%92%A9
+data:text/plain;charset=utf8,%F0%9F%92%A9
+</pre>
+
+  <li>
+    Although RFC 2397 doesn’t bother with a normative reference,
+    base64 in IETF-land is defined by <a href="https://tools.ietf.org/html/rfc4648">RFC 4648</a>,
+    which defines both <em>The Base 64 Alphabet</em>
+    and <em>The "URL and Filename safe" Base 64 Alphabet</em>.
+    Which of them should be used?
+    The former looks like the one to be used by default, but the latter sounds kinda relevant.
+    Or should both of them be accepted?
+
+  <li>
+    What should happen to non-alphabet characters in base64 data?
+    Options include ignoring them, or making parsing fail (return the equivalent of a network error.)
+    Should this differ for whitespace and other non-alphabet characters?
+
+  <li>
+    What should happen if base64 data has too little padding (including none) or too much?
+
+</ul>
